@@ -1,61 +1,57 @@
 #include <Arduino.h>
+#include <Stepper.h>
 
-// function declarations
-int myFunction(int, int);
+// change this to the number of steps on your motor
+const int steps = 200;
+int AIN1 = 1;
+int AIN2 = 2;
+int BIN1 = 3;
+int BIN2 = 4;
 
+// create an instance of the stepper class, specifying
+// the number of steps of the motor and the pins it's
+// attached to
 
-#define MOTOR_IN1 1
-#define MOTOR_IN2 2
+Stepper stepper(steps, AIN1, AIN2, BIN1, BIN2);
 
 void setup() {
+  pinMode(AIN1, OUTPUT);
+  pinMode(AIN2, OUTPUT);
+  pinMode(BIN1, OUTPUT);
+  pinMode(BIN2, OUTPUT);
+  // set the speed at 10 rpm:
+  stepper.setSpeed(30);
+  // initialize the serial port:
   Serial.begin(9600);
-
-  Serial.println("DRV8871 test");
-  
-  pinMode(MOTOR_IN1, OUTPUT);
-  pinMode(MOTOR_IN2, OUTPUT);
 }
 
 void loop() {
+  // step one revolution  in one direction:
+  Serial.println("clockwise");
+  stepper.step(steps);
+  delay(3000);
 
-  // ramp up forward
-  digitalWrite(MOTOR_IN1, LOW);
-  for (int i=0; i<255; i++) {
-    analogWrite(MOTOR_IN2, i);
-    delay(10);
-    Serial.println("loop 1");
-  }
-
-  // forward full speed for one second
-  delay(1000);
-  
-  // ramp down forward
-  for (int i=255; i>=0; i--) { //attn was i=255
-    analogWrite(MOTOR_IN2, i);
-    delay(10);
-    Serial.println("loop 2");
-  }
-
-  // ramp up backward
-  digitalWrite(MOTOR_IN2, LOW);
-  for (int i=0; i<255; i++) {
-    analogWrite(MOTOR_IN1, i);
-    delay(10);
-    Serial.println("loop 3");
-  }
-
-  // backward full speed for one second
-  delay(1000);
-
-  // ramp down backward
-  for (int i=255; i>=0; i--) {
-    analogWrite(MOTOR_IN1, i);
-    delay(10);
-    Serial.println("loop 4");
-  }
+  // // step one revolution in the other direction:
+  // Serial.println("counterclockwise");
+  // stepper.step(-STEPS);
+  // delay(1000);
 }
 
-// function definitions
-int myFunction(int x, int y) {
-  return x + y;
+
+/*
+void setup()
+{
+  Serial.begin(9600);
+  Serial.println("Stepper test!");
+  // set the speed of the motor to 30 RPMs
+  stepper.setSpeed(60);
 }
+
+void loop()
+{
+  Serial.println("Forward");
+  stepper.step(STEPS);
+  Serial.println("Backward");
+  stepper.step(-STEPS);
+}
+*/
