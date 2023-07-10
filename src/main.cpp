@@ -1,57 +1,49 @@
-#include <Arduino.h>
-#include <Stepper.h>
+/*
+   Uno sketch to drive a stepper motor using the AccelStepper library.
+   Runs stepper back and forth between limits. (Like Bounce demo program.)
+   Works with a ULN-2003 unipolar stepper driver, or a bipolar, constant voltage motor driver
+   such as the L298 or TB6612, or a step/direction constant current driver like the a4988.
+   Initial Creation: 10/15/21  --jkl  jlarson@pacifier.com
+      - Rev 1 - 11/7/21      -jkl
+      - Rev 2 = 12/14/21   -jkl
+*/
 
-// change this to the number of steps on your motor
-const int steps = 200;
-int AIN1 = 1;
-int AIN2 = 2;
-int BIN1 = 3;
-int BIN2 = 4;
+// Include the AccelStepper Library
+#include <AccelStepper.h>
 
-// create an instance of the stepper class, specifying
-// the number of steps of the motor and the pins it's
-// attached to
 
-Stepper stepper(steps, AIN1, AIN2, BIN1, BIN2);
+// Motor Connections (constant voltage bipolar H-bridge motor driver)
+const int AIn1 = 1;
+const int AIn2 = 2;
+const int BIn1 = 3;
+const int BIn2 = 4;
+
+
+// Creates an instance - Pick the version you want to use and un-comment it. That's the only required change.
+AccelStepper myStepper(AccelStepper::FULL4WIRE, AIn1, AIn2, BIn1, BIn2);  // works for TB6612 (Bipolar, constant voltage, H-Bridge motor driver)
+//AccelStepper myStepper(AccelStepper::FULL4WIRE, In1, In3, In2, In4);    // works for ULN2003 (Unipolar motor driver)
+// AccelStepper myStepper(AccelStepper::DRIVER, stepPin, dirPin);           // works for a4988 (Bipolar, constant current, step/direction driver)
 
 void setup() {
-  pinMode(AIN1, OUTPUT);
-  pinMode(AIN2, OUTPUT);
-  pinMode(BIN1, OUTPUT);
-  pinMode(BIN2, OUTPUT);
-  // set the speed at 10 rpm:
-  stepper.setSpeed(30);
-  // initialize the serial port:
-  Serial.begin(9600);
+  // set the maximum speed, acceleration factor,
+  // and the target position
+  myStepper.setMaxSpeed(1000.0);
+  myStepper.setAcceleration(50.0);
+  myStepper.moveTo(2000);
 }
 
 void loop() {
-  // step one revolution  in one direction:
-  Serial.println("clockwise");
-  stepper.step(steps);
-  delay(3000);
+  // Change direction once the motor reaches target position
+  /*
+    if (myStepper.distanceToGo() == 0)   // this form also works - pick your favorite!
+    myStepper.moveTo(-myStepper.currentPosition());
 
-  // // step one revolution in the other direction:
-  // Serial.println("counterclockwise");
-  // stepper.step(-STEPS);
-  // delay(1000);
+    // Move the motor one step
+    myStepper.run();
+  */
+  // run() returns true as long as the final position 
+  //    has not been reached and speed is not 0.
+  if (!myStepper.run()) {  
+    myStepper.moveTo(-myStepper.currentPosition());
+  }
 }
-
-
-/*
-void setup()
-{
-  Serial.begin(9600);
-  Serial.println("Stepper test!");
-  // set the speed of the motor to 30 RPMs
-  stepper.setSpeed(60);
-}
-
-void loop()
-{
-  Serial.println("Forward");
-  stepper.step(STEPS);
-  Serial.println("Backward");
-  stepper.step(-STEPS);
-}
-*/
